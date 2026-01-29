@@ -230,12 +230,10 @@ function setupErrorHandler(app: express.Application) {
   setupBodyParsing(app);
   setupRequestLogging(app);
 
-  // Seed database with initial data
-  try {
-    await seedDatabase();
-  } catch (error) {
+  // Seed database with initial data (non-blocking)
+  seedDatabase().catch((error) => {
     console.error("Failed to seed database:", error);
-  }
+  });
 
   configureExpoAndLanding(app);
 
