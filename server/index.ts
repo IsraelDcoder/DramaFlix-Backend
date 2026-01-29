@@ -235,9 +235,9 @@ function setupErrorHandler(app: express.Application) {
     console.error("Failed to seed database:", error);
   });
 
-  configureExpoAndLanding(app);
-
   const server = await registerRoutes(app);
+
+  configureExpoAndLanding(app);
 
   setupErrorHandler(app);
 
