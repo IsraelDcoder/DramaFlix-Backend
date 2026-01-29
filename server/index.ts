@@ -8,6 +8,27 @@ import { seedDatabase } from "./seed";
 import * as fs from "fs";
 import * as path from "path";
 
+/**
+ * Determine if database seeding should run.
+ * - In production: only if SEED_DB=true is explicitly set
+ * - In development: always run
+ */
+function shouldSeed(): boolean {
+  // Explicit enable via env var
+  if (process.env.SEED_DB === "true") {
+    console.log("Seeding enabled via SEED_DB=true environment variable");
+    return true;
+  }
+  // Auto-seed in non-production environments
+  if (process.env.NODE_ENV !== "production") {
+    console.log("Auto-seeding in development environment");
+    return true;
+  }
+  // Skip seeding in production by default
+  console.log("Seeding skipped in production (set SEED_DB=true to enable)");
+  return false;
+}
+
 const app = express();
 const log = console.log;
 
@@ -230,10 +251,17 @@ function setupErrorHandler(app: express.Application) {
   setupBodyParsing(app);
   setupRequestLogging(app);
 
-  // Seed database with initial data (non-blocking)
-  seedDatabase().catch((error) => {
-    console.error("Failed to seed database:", error);
-  });
+  // Seed database with initial data (non-blocking, never crashes the server)
+  if (shouldSeed()) {
+    seedDatabase()
+      .then(() => {
+        console.log("Database seed completed successfully");
+      })
+      .catch((error) => {
+        console.error("Database seed failed (non-fatal, server continues):", error);
+        // DO NOT process.exit() - server must continue in production
+      });
+  }
 
   const server = await registerRoutes(app);
 
