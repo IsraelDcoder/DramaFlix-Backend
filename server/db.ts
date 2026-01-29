@@ -10,7 +10,7 @@ import * as schema from "@shared/schema";
 const isProduction = process.env.NODE_ENV === "production";
 const databaseUrl = process.env.DATABASE_URL || "./app.db";
 
-let db;
+let db: any;
 
 if (isProduction || databaseUrl.startsWith("postgres")) {
   // Use PostgreSQL in production
